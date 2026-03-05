@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 
 #include "includes/Shader.h"
-#include "includes/Vertex.h"
 #include "includes/Camera.h"
 
 
@@ -50,7 +49,6 @@ void framebufferSizeCallback(GLFWwindow* window, const int width, const int heig
 void cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
 void scrollCallback(GLFWwindow* window, double xOff, double yOff);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void render(GLFWwindow* window);
 void init();
 
 
@@ -60,14 +58,11 @@ float lastFrameTime{};
 Camera cam{ glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f), 45.0f, (float)screen::width/screen::height, 10.0f};
 
 
-
 glm::mat4 modelMat = glm::mat4{ 1.0f };
 glm::mat4 imguiDisplayMat{};
 bool freeMat{};
 
 unsigned vao, vbo, ibo;
-unsigned matrixUniforms;
-GLuint length;
 
 
 std::vector<float> verts{};
@@ -122,13 +117,8 @@ int main()
     Shader grid{ "assets/shaders/grid.vert", "assets/shaders/grid.frag" };
 
 
-    grid.use();
-
     init();
-    glDisable(GL_CULL_FACE);
-    grid.setUniformBlock("Matrices", 0);
 
-    glBindBuffer(GL_UNIFORM_BUFFER, matrixUniforms);
 
 
     while (!glfwWindowShouldClose(window))
@@ -152,13 +142,12 @@ int main()
 
         grid.use();
         grid.setUniformMat4("u_Model", modelMat);
-        glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(cam.getProjectionMatrix()));
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(cam.getViewMatrix()));
-        glDisable(GL_DEPTH_TEST);
+        grid.setUniformMat4("u_View", cam.getViewMatrix());
+        grid.setUniformMat4("u_Proj", cam.getProjectionMatrix());
+
         glBindVertexArray(vao);
 
-        glDrawElements(GL_LINES, length, GL_UNSIGNED_INT, NULL);
+        glDrawElements(GL_LINES, inds.size(), GL_UNSIGNED_INT, NULL);
 
         glBindVertexArray(0);
 
@@ -388,20 +377,5 @@ void init()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    length = (GLuint)inds.size();
 
-    glGenBuffers(1, &matrixUniforms);
-    glBindBuffer(GL_UNIFORM_BUFFER, matrixUniforms);
-    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(cam.getProjectionMatrix()));
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(cam.getViewMatrix()));
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, matrixUniforms);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-
-}
-
-void render(GLFWwindow* window)
-{
-    
 }

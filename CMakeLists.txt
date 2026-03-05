@@ -42,12 +42,7 @@ set (INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/includes
 )
 set (HEADER_SOURCES
-        includes/PathResolver.h
-        includes/Vertex.h
-        includes/primitives/Plane.h
-        includes/primitives/Skybox.h
-
- "includes/primitives/Cube.h" "includes/primitives/Quad.h")
+        includes/PathResolver.h)
 
 set(PROJECT_SOURCES
         ${GLAD_DIR}/glad.c
